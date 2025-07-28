@@ -1,3 +1,4 @@
+import Link from 'next/link' 
 "use client";
 
 export default function Home() {
@@ -14,8 +15,7 @@ export default function Home() {
             </div>
             
             {/* Center - Dead Horse Logo */}
-            <a href="/" className="text-3xl font-bold hover:text-gray-300 transition-colors">
-              Dead Horse
+<Link href="/" className="text-3xl font-bold hover:text-gray-300 transition-colors">              Dead Horse
             </a>
             
             {/* Right Side Navigation */}
