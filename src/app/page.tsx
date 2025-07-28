@@ -1,7 +1,6 @@
-import Link from "next/link"
-import Link from 'next/link' 
-
 "use client";
+
+import Link from 'next/link'
 
 export default function Home() {
   return (
@@ -17,10 +16,9 @@ export default function Home() {
             </div>
             
             {/* Center - Dead Horse Logo */}
-            
             <Link href="/" className="text-3xl font-bold hover:text-gray-300 transition-colors">
-            Dead Horse
-            </a>
+              Dead Horse
+            </Link>
             
             {/* Right Side Navigation */}
             <div className="hidden md:flex space-x-6 flex-1 pl-8">
@@ -158,7 +156,7 @@ export default function Home() {
                     </h3>
                     <p className="text-gray-400">
                       Full intellectual property rights remain with you, always. We use IPFS and Arweave 
-                      to create immutable records of your copyright ownership that can't be altered or removed.
+                      to create immutable records of your copyright ownership that cannot be altered or removed.
                     </p>
                   </div>
                 </div>
@@ -227,208 +225,6 @@ export default function Home() {
               <button className="mt-8 border border-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-black transition-colors">
                 Start Collecting
               </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Zine Section */}
-      <section className="py-20 border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Dead Horse Zine</h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Art criticism, artist interviews, and cultural commentary. 
-              The stories behind the art and the artists who create it.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <article className="group cursor-pointer">
-              <div className="aspect-[4/3] bg-gray-800 rounded-lg mb-4 flex items-center justify-center text-gray-500 group-hover:bg-gray-700 transition-colors">
-                <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-2 bg-gray-600 rounded"></div>
-                  <p>Featured Article</p>
-                </div>
-              </div>
-              <span className="text-sm text-gray-400 uppercase tracking-wide">Interview</span>
-              <h3 className="text-xl font-semibold mb-2 group-hover:text-gray-300 transition-colors">
-                Artist Spotlight: Behind the Canvas
-              </h3>
-              <p className="text-gray-400">An intimate conversation about process, inspiration, and the intersection of physical and digital art...</p>
-              <div className="mt-4 text-sm text-gray-500">5 min read</div>
-            </article>
-
-            <article className="group cursor-pointer">
-              <div className="aspect-[4/3] bg-gray-800 rounded-lg mb-4 flex items-center justify-center text-gray-500 group-hover:bg-gray-700 transition-colors">
-                <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-2 bg-gray-600 rounded"></div>
-                  <p>Essay</p>
-                </div>
-              </div>
-              <span className="text-sm text-gray-400 uppercase tracking-wide">Opinion</span>
-              <h3 className="text-xl font-semibold mb-2 group-hover:text-gray-300 transition-colors">
-                Why We're Still Flogging It
-              </h3>
-              <p className="text-gray-400">A manifesto on authentic art relationships in the age of digital speculation and AI generation...</p>
-              <div className="mt-4 text-sm text-gray-500">8 min read</div>
-            </article>
-
-            <article className="group cursor-pointer">
-              <div className="aspect-[4/3] bg-gray-800 rounded-lg mb-4 flex items-center justify-center text-gray-500 group-hover:bg-gray-700 transition-colors">
-                <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-2 bg-gray-600 rounded"></div>
-                  <p>Guide</p>
-                </div>
-              </div>
-              <span className="text-sm text-gray-400 uppercase tracking-wide">Education</span>
-              <h3 className="text-xl font-semibold mb-2 group-hover:text-gray-300 transition-colors">
-                QR Codes and Blockchain: A Primer
-              </h3>
-              <p className="text-gray-400">Understanding how physical artworks connect to digital certificates and why it matters...</p>
-              <div className="mt-4 text-sm text-gray-500">12 min read</div>
-            </article>
-          </div>
-
-          <div className="text-center mt-12">
-            <a href="/zine" className="inline-block border border-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-black transition-colors">
-              Read More Articles
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Platform Transparency */}
-      <section id="transparency" className="py-20 border-t border-gray-800">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Where Our 20% Goes</h2>
-            <p className="text-xl text-gray-300">
-              We believe in complete transparency. Here's exactly how we use our platform fee 
-              to support artists and build a sustainable gallery.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-12">
-            <div className="space-y-6">
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold text-xs">⚡</div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">Platform Operations</h3>
-                  <p className="text-gray-400">Hosting, blockchain fees, payment processing, and keeping the lights on.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold text-xs">○</div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">Curation Team</h3>
-                  <p className="text-gray-400">Art experts who review applications and maintain quality standards.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold text-xs">◦</div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">Zine & Content</h3>
-                  <p className="text-gray-400">Artist interviews, cultural writing, and educational content creation.</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-6">
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold text-xs">●</div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">Artist Support</h3>
-                  <p className="text-gray-400">Marketing campaigns, featured placements, and promotional opportunities.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold text-xs">▲</div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">Platform Development</h3>
-                  <p className="text-gray-400">New features, security updates, and improving the user experience.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold text-xs">◐</div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">Future Opportunities</h3>
-                  <p className="text-gray-400">Gallery partnerships, exhibitions, artist residencies, and community events.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-16 p-6 bg-gray-900 rounded-lg">
-            <h3 className="text-xl font-semibold mb-4 text-center">Our Commitment</h3>
-            <p className="text-gray-300 text-center leading-relaxed">
-              Every penny goes back into supporting artists and building a better platform. 
-              No profit extraction, no shareholders - just sustainable growth that benefits the entire community.
-              We publish quarterly transparency reports showing exactly where funds are allocated.
-            </p>
-            <div className="text-center mt-6">
-              <a href="/transparency" className="inline-block text-white hover:text-gray-300 transition-colors border-b border-gray-600 hover:border-gray-400">
-                View Transparency Reports →
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Community Questions Section */}
-      <section className="py-20 bg-gray-800">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold mb-8">Let's Talk About Art</h2>
-          <p className="text-xl text-gray-300 mb-8">
-            We're curious about your thoughts on art, culture, and where we're heading. 
-            Your perspective helps us understand what matters to artists and art lovers today.
-          </p>
-          <div className="grid md:grid-cols-2 gap-6">
-            <a href="/questions/artist" className="block bg-gray-700 p-6 rounded-lg hover:bg-gray-600 transition-colors">
-              <h3 className="text-xl font-semibold mb-3">For Artists</h3>
-              <p className="text-gray-400">Share your thoughts on creating, selling, and connecting with collectors in today's art world.</p>
-            </a>
-            <a href="/questions/collector" className="block bg-gray-700 p-6 rounded-lg hover:bg-gray-600 transition-colors">
-              <h3 className="text-xl font-semibold mb-3">For Art Lovers</h3>
-              <p className="text-gray-400">Tell us about discovering art, what draws you in, and how you connect with pieces and artists.</p>
-            </a>
-          </div>
-          <div className="mt-8">
-            <a href="/questions/culture" className="inline-block bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-200 transition-colors">
-              Art & Culture Questions
-            </a>
-          </div>
-          <p className="text-sm text-gray-400 mt-6">
-            No forms, no data collection - just genuine curiosity about your experience with art.
-          </p>
-        </div>
-      </section>
-
-      {/* About */}
-      <section id="about" className="py-20 bg-gray-900">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold mb-8">About Dead Horse</h2>
-          <p className="text-xl text-gray-300 leading-relaxed mb-8">
-            We're building a different kind of art platform. One where artists are fairly compensated, 
-            collectors own genuine pieces, and speculation takes a back seat to authentic relationships. 
-            Every artwork comes with QR-coded blockchain authentication, bridging the physical and digital worlds.
-          </p>
-          <div className="grid md:grid-cols-3 gap-8 mt-16">
-            <div>
-              <div className="text-3xl font-bold text-white mb-2">20</div>
-              <p className="text-gray-400">Artworks per month</p>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white mb-2">80%</div>
-              <p className="text-gray-400">Goes to artists</p>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white mb-2">Base</div>
-              <p className="text-gray-400">Low-cost blockchain</p>
             </div>
           </div>
         </div>
