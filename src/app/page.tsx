@@ -1,4 +1,6 @@
+import Link from "next/link"
 import Link from 'next/link' 
+
 "use client";
 
 export default function Home() {
@@ -10,19 +12,21 @@ export default function Home() {
           <div className="flex items-center justify-between py-4">
             {/* Left Side Navigation */}
             <div className="hidden md:flex space-x-6 flex-1 justify-end pr-8">
-              <a href="/gallery" className="hover:text-gray-300 transition-colors">Gallery</a>
-              <a href="#zine" className="hover:text-gray-300 transition-colors">Zine</a>
+              <a href="/gallery" className="hover:text-gray-300 transition-colors">Gallery</Link>
+              <a href="#zine" className="hover:text-gray-300 transition-colors">Zine</Link>
             </div>
             
             {/* Center - Dead Horse Logo */}
-<Link href="/" className="text-3xl font-bold hover:text-gray-300 transition-colors">              Dead Horse
-            </a>
+            
+            <Link href="/" className="text-3xl font-bold hover:text-gray-300 transition-colors">
+            Dead Horse
+            </Link>
             
             {/* Right Side Navigation */}
             <div className="hidden md:flex space-x-6 flex-1 pl-8">
-              <a href="#artists" className="hover:text-gray-300 transition-colors">For Artists</a>
-              <a href="#collectors" className="hover:text-gray-300 transition-colors">For Collectors</a>
-              <a href="#about" className="hover:text-gray-300 transition-colors">About</a>
+              <a href="#artists" className="hover:text-gray-300 transition-colors">For Artists</Link>
+              <a href="#collectors" className="hover:text-gray-300 transition-colors">For Collectors</Link>
+              <a href="#about" className="hover:text-gray-300 transition-colors">About</Link>
             </div>
             
             {/* Connect Button */}
@@ -46,10 +50,10 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <a href="/gallery" className="bg-white text-black px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-200 transition-colors">
               Browse Gallery
-            </a>
+            </Link>
             <a href="/apply" className="border border-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-black transition-colors">
               Apply as Artist
-            </a>
+            </Link>
           </div>
           
           {/* Quick Navigation */}
@@ -57,23 +61,23 @@ export default function Home() {
             <a href="/gallery" className="flex items-center px-4 py-2 bg-gray-800/50 backdrop-blur-sm rounded-full hover:bg-gray-700 transition-colors">
               <span className="w-2 h-2 bg-white rounded-full mr-2"></span>
               Current Drop
-            </a>
+            </Link>
             <a href="#zine" className="flex items-center px-4 py-2 bg-gray-800/50 backdrop-blur-sm rounded-full hover:bg-gray-700 transition-colors">
               <span className="w-2 h-2 bg-white rounded-full mr-2"></span>
               Latest Articles
-            </a>
+            </Link>
             <a href="#artists" className="flex items-center px-4 py-2 bg-gray-800/50 backdrop-blur-sm rounded-full hover:bg-gray-700 transition-colors">
               <span className="w-2 h-2 bg-white rounded-full mr-2"></span>
               For Artists
-            </a>
+            </Link>
             <a href="#collectors" className="flex items-center px-4 py-2 bg-gray-800/50 backdrop-blur-sm rounded-full hover:bg-gray-700 transition-colors">
               <span className="w-2 h-2 bg-white rounded-full mr-2"></span>
               For Collectors
-            </a>
+            </Link>
             <a href="#about" className="flex items-center px-4 py-2 bg-gray-800/50 backdrop-blur-sm rounded-full hover:bg-gray-700 transition-colors">
               <span className="w-2 h-2 bg-white rounded-full mr-2"></span>
               About
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -85,7 +89,7 @@ export default function Home() {
             <h2 className="text-4xl font-bold text-center mb-16 hover:text-gray-300 transition-colors">
               Current Drop
             </h2>
-          </a>
+          </Link>
           <div className="grid md:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
               <div key={i} className="group cursor-pointer">
@@ -122,14 +126,14 @@ export default function Home() {
                     <h3 className="text-xl font-semibold mb-2">
                       <a href="/artist-revenue" className="hover:text-gray-300 transition-colors">
                         Keep 80% of Sales
-                      </a>
+                      </Link>
                     </h3>
                     <p className="text-gray-400">
                       We believe artists should be fairly compensated. You keep the majority of every sale.
                       <br />
                       <a href="#transparency" className="text-white hover:text-gray-300 transition-colors text-sm border-b border-gray-600 hover:border-gray-400">
                         See where our 20% goes →
-                      </a>
+                      </Link>
                     </p>
                   </div>
                 </div>
@@ -139,7 +143,7 @@ export default function Home() {
                     <h3 className="text-xl font-semibold mb-2">
                       <a href="/physical-digital" className="hover:text-gray-300 transition-colors">
                         Physical + Digital
-                      </a>
+                      </Link>
                     </h3>
                     <p className="text-gray-400">Your physical artwork gets a QR code linking to its blockchain certificate.</p>
                   </div>
@@ -150,7 +154,7 @@ export default function Home() {
                     <h3 className="text-xl font-semibold mb-2">
                       <a href="/copyright-protection" className="hover:text-gray-300 transition-colors">
                         You Keep Copyright
-                      </a>
+                      </Link>
                     </h3>
                     <p className="text-gray-400">
                       Full intellectual property rights remain with you, always. We use IPFS and Arweave 
@@ -192,7 +196,7 @@ export default function Home() {
                     <h3 className="text-xl font-semibold mb-2">
                       <a href="/authentic-art" className="hover:text-gray-300 transition-colors">
                         Authentic Art
-                      </a>
+                      </Link>
                     </h3>
                     <p className="text-gray-400">Every piece is curated and verified. No AI, no mass production, just real art.</p>
                   </div>
@@ -203,7 +207,7 @@ export default function Home() {
                     <h3 className="text-xl font-semibold mb-2">
                       <a href="/no-wallet-needed" className="hover:text-gray-300 transition-colors">
                         No Wallet Needed
-                      </a>
+                      </Link>
                     </h3>
                     <p className="text-gray-400">Start collecting with just your email. We handle the blockchain complexity.</p>
                   </div>
@@ -214,7 +218,7 @@ export default function Home() {
                     <h3 className="text-xl font-semibold mb-2">
                       <a href="/physical-ownership" className="hover:text-gray-300 transition-colors">
                         Physical Ownership
-                      </a>
+                      </Link>
                     </h3>
                     <p className="text-gray-400">Own the actual artwork with blockchain-verified authenticity via QR code.</p>
                   </div>
@@ -289,7 +293,7 @@ export default function Home() {
           <div className="text-center mt-12">
             <a href="/zine" className="inline-block border border-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-black transition-colors">
               Read More Articles
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -369,7 +373,7 @@ export default function Home() {
             <div className="text-center mt-6">
               <a href="/transparency" className="inline-block text-white hover:text-gray-300 transition-colors border-b border-gray-600 hover:border-gray-400">
                 View Transparency Reports →
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -387,16 +391,16 @@ export default function Home() {
             <a href="/questions/artist" className="block bg-gray-700 p-6 rounded-lg hover:bg-gray-600 transition-colors">
               <h3 className="text-xl font-semibold mb-3">For Artists</h3>
               <p className="text-gray-400">Share your thoughts on creating, selling, and connecting with collectors in today's art world.</p>
-            </a>
+            </Link>
             <a href="/questions/collector" className="block bg-gray-700 p-6 rounded-lg hover:bg-gray-600 transition-colors">
               <h3 className="text-xl font-semibold mb-3">For Art Lovers</h3>
               <p className="text-gray-400">Tell us about discovering art, what draws you in, and how you connect with pieces and artists.</p>
-            </a>
+            </Link>
           </div>
           <div className="mt-8">
             <a href="/questions/culture" className="inline-block bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-200 transition-colors">
               Art & Culture Questions
-            </a>
+            </Link>
           </div>
           <p className="text-sm text-gray-400 mt-6">
             No forms, no data collection - just genuine curiosity about your experience with art.
@@ -452,28 +456,28 @@ export default function Home() {
             <div>
               <h4 className="font-semibold mb-4">Gallery</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Current Drop</a></li>
-                <li><a href="#" className="hover:text-white">Past Exhibitions</a></li>
-                <li><a href="#" className="hover:text-white">Featured Artists</a></li>
-                <li><a href="/zine" className="hover:text-white">Zine</a></li>
+                <li><a href="#" className="hover:text-white">Current Drop</Link></li>
+                <li><a href="#" className="hover:text-white">Past Exhibitions</Link></li>
+                <li><a href="#" className="hover:text-white">Featured Artists</Link></li>
+                <li><a href="/zine" className="hover:text-white">Zine</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Community</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Artist Applications</a></li>
-                <li><a href="#" className="hover:text-white">Collector Guide</a></li>
-                <li><a href="#" className="hover:text-white">Support</a></li>
+                <li><a href="#" className="hover:text-white">Artist Applications</Link></li>
+                <li><a href="#" className="hover:text-white">Collector Guide</Link></li>
+                <li><a href="#" className="hover:text-white">Support</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Connect</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="https://twitter.com/deadhorsegallery" className="hover:text-white">Twitter</a></li>
-                <li><a href="https://instagram.com/deadhorsegallery" className="hover:text-white">Instagram</a></li>
-                <li><a href="https://orb.ac/@deadhorse" className="hover:text-white">Orb</a></li>
-                <li><a href="https://warpcast.com/deadhorse" className="hover:text-white">Farcaster</a></li>
-                <li><a href="https://lenster.xyz/u/deadhorse" className="hover:text-white">Lens</a></li>
+                <li><a href="https://twitter.com/deadhorsegallery" className="hover:text-white">Twitter</Link></li>
+                <li><a href="https://instagram.com/deadhorsegallery" className="hover:text-white">Instagram</Link></li>
+                <li><a href="https://orb.ac/@deadhorse" className="hover:text-white">Orb</Link></li>
+                <li><a href="https://warpcast.com/deadhorse" className="hover:text-white">Farcaster</Link></li>
+                <li><a href="https://lenster.xyz/u/deadhorse" className="hover:text-white">Lens</Link></li>
               </ul>
             </div>
           </div>
