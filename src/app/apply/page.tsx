@@ -5,6 +5,16 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { usePayment } from '../../hooks/usePayment';
+import { PaymentFormWrapper } from '../../components/PaymentForm';
+import { uploadPortfolio } from '../../lib/supabase';
+import type { SupabaseUploadResult, MagicUser } from '../../types/supabase';
+import type { ApplicationFormError } from '../../types/payment';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MIN_IMAGES = 3;
+const MAX_IMAGES = 6;
+const APPLICATION_FEE = 50.00; // Application fee in USD
 
 interface FormData {
   portfolio_url: string;
@@ -21,6 +31,16 @@ interface FormData {
 const ArtistApplicationPage = () => {
   const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
+
+  const [imagePreview, setImagePreview] = useState<string[]>([]);
+  
+  // Cleanup image preview URLs when component unmounts
+  React.useEffect(() => {
+    return () => {
+      imagePreview.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [imagePreview]);
+
   const [formData, setFormData] = useState<FormData>({
     portfolio_url: '',
     instagram_handle: '',
@@ -33,8 +53,10 @@ const ArtistApplicationPage = () => {
     portfolio_images: []
   });
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [imagePreview, setImagePreview] = useState<string[]>([]);
+  const [error, setError] = useState<ApplicationFormError | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const { initiatePayment, isLoading: paymentLoading } = usePayment();
 
   // Redirect if not authenticated
   if (!loading && !isAuthenticated) {
@@ -72,9 +94,24 @@ const ArtistApplicationPage = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     
-    if (files.length + formData.portfolio_images.length > 6) {
-      setError('Maximum 6 images allowed');
+    if (files.length + formData.portfolio_images.length > MAX_IMAGES) {
+      setError({
+        type: 'validation',
+        message: `Maximum ${MAX_IMAGES} images allowed`
+      });
       return;
+    }
+
+    // Validate each file
+    for (const file of files) {
+      const error = validateFile(file);
+      if (error) {
+        setError({
+          type: 'validation',
+          message: error
+        });
+        return;
+      }
     }
 
     // Create preview URLs
@@ -85,6 +122,8 @@ const ArtistApplicationPage = () => {
       ...formData,
       portfolio_images: [...formData.portfolio_images, ...files]
     });
+    
+    setError(null);
   };
 
   const removeImage = (index: number) => {
@@ -98,10 +137,33 @@ const ArtistApplicationPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setError('');
+    setError(null);
 
     try {
-      // Create FormData for file upload
+      if (
+        !user ||
+        typeof user !== 'object' ||
+        typeof ((user as unknown) as MagicUser).getIdToken !== 'function'
+      ) {
+        setError({
+          type: 'validation',
+          message: 'You must be logged in to submit an application'
+        });
+        setSubmitting(false);
+        return;
+      }
+      const magicUser = user as unknown as MagicUser;
+
+      // If payment hasn't been initiated yet, start the payment flow
+      if (!showPayment) {
+        const secret = await initiatePayment(APPLICATION_FEE);
+        setClientSecret(secret);
+        setShowPayment(true);
+        setSubmitting(false);
+        return;
+      }
+
+      // If we get here, payment was successful and we can submit the application
       const submitData = new FormData();
       
       // Add form fields
@@ -111,35 +173,38 @@ const ArtistApplicationPage = () => {
         }
       });
 
-      // Add images
-      formData.portfolio_images.forEach((file, index) => {
-        submitData.append(`portfolio_image_${index}`, file);
-      });
+      // Upload portfolio images to Supabase
+      const uploadPromises = formData.portfolio_images.map(file => 
+        uploadPortfolio(file, magicUser.issuer)
+      );
+      
+      const uploadResults = await Promise.all(uploadPromises);
+      const portfolioUrls = uploadResults.map((result: SupabaseUploadResult) => result.path);
 
-      // Get auth token (we'll implement this properly when we have Magic working)
-      // For now, we'll just send without auth token for testing
-      const response = await fetch('http://localhost:3001/api/artists/apply', {
+      // Add image URLs to form data
+      submitData.append('portfolio_urls', JSON.stringify(portfolioUrls));
+
+      const response = await fetch('/api/artists/apply', {
         method: 'POST',
         headers: {
-          // We'll add auth header once Magic is working properly
-          // 'Authorization': `Bearer ${authToken}`,
+          'Authorization': `Bearer ${await ((user as unknown) as MagicUser).getIdToken()}`,
         },
         body: submitData
       });
 
       if (response.ok) {
-        const result = await response.json();
-        
-        // For now, just show success message
-        alert('Application submitted successfully! Payment integration coming next.');
-        console.log('Application result:', result);
+        router.push('/thank-you');
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Application submission failed');
+        throw new Error(errorData.message || 'Application submission failed');
       }
     } catch (err) {
-      setError('Network error. Please try again.');
-      console.error('Application submission error:', err);
+      const error = err as Error;
+      setError({
+        type: 'submission',
+        message: error.message || 'An unexpected error occurred'
+      });
+      console.error('Application submission error:', error);
     } finally {
       setSubmitting(false);
     }
@@ -152,218 +217,259 @@ const ArtistApplicationPage = () => {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-4">Apply to Dead Horse Gallery</h1>
           <p className="text-xl text-gray-600 mb-2">Join our curated collection of exceptional artists</p>
-          <p className="text-lg text-gray-500">Application Fee: £50 • Review Time: 48 hours</p>
+          <p className="text-lg text-gray-500">Application Fee: ${APPLICATION_FEE.toFixed(2)} • Review Time: 48 hours</p>
         </div>
 
         {/* Application Form */}
         <div className="bg-white rounded-lg shadow-md p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Artist Information Section */}
-            <div className="border-b pb-6">
-              <h2 className="text-2xl font-semibold mb-4">Artist Information</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Portfolio Website URL
-                  </label>
-                  <input
-                    type="url"
-                    name="portfolio_url"
-                    value={formData.portfolio_url}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    placeholder="https://yourportfolio.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Instagram Handle
-                  </label>
-                  <input
-                    type="text"
-                    name="instagram_handle"
-                    value={formData.instagram_handle}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    placeholder="@yourusername"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Experience Level *
-                  </label>
-                  <select
-                    name="experience_level"
-                    value={formData.experience_level}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                  >
-                    <option value="">Select experience level</option>
-                    <option value="emerging">Emerging Artist (0-3 years)</option>
-                    <option value="established">Established Artist (3-10 years)</option>
-                    <option value="professional">Professional Artist (10+ years)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Primary Medium *
-                  </label>
-                  <select
-                    name="art_medium"
-                    value={formData.art_medium}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                  >
-                    <option value="">Select primary medium</option>
-                    <option value="painting">Painting</option>
-                    <option value="drawing">Drawing</option>
-                    <option value="sculpture">Sculpture</option>
-                    <option value="photography">Photography</option>
-                    <option value="mixed_media">Mixed Media</option>
-                    <option value="digital">Digital Art</option>
-                    <option value="printmaking">Printmaking</option>
-                    <option value="ceramics">Ceramics</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Portfolio Images Section */}
-            <div className="border-b pb-6">
-              <h2 className="text-2xl font-semibold mb-4">Portfolio Images</h2>
-              <p className="text-gray-600 mb-4">Upload 3-6 high-quality images of your best work (Max 5MB each)</p>
-              
-              <div className="mb-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Artist Information Section */}
+          <div className="border-b pb-6">
+            <h2 className="text-2xl font-semibold mb-4">Artist Information</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Portfolio Website URL
+                </label>
                 <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
+                  type="url"
+                  name="portfolio_url"
+                  value={formData.portfolio_url}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  placeholder="https://yourportfolio.com"
                 />
               </div>
 
-              {/* Image Previews */}
-              {imagePreview.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {imagePreview.map((preview, index) => (
-                    <div key={index} className="relative">
-                      <Image
-                        src={preview}
-                        alt={`Portfolio piece ${index + 1}`}
-                        width={300}
-                        height={160}
-                        className="w-full h-40 object-cover rounded-lg"
-                        unoptimized={true} // Since these are blob URLs from file input
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Instagram Handle
+                </label>
+                <input
+                  type="text"
+                  name="instagram_handle"
+                  value={formData.instagram_handle}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  placeholder="@yourusername"
+                />
+              </div>
 
-            {/* Artist Statement Section */}
-            <div className="border-b pb-6">
-              <h2 className="text-2xl font-semibold mb-4">About Your Work</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Artistic Statement * (300-500 words)
-                  </label>
-                  <textarea
-                    name="artistic_statement"
-                    value={formData.artistic_statement}
-                    onChange={handleInputChange}
-                    required
-                    rows={6}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    placeholder="Describe your artistic practice, influences, and what drives your work..."
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Experience Level *
+                </label>
+                <select
+                  name="experience_level"
+                  value={formData.experience_level}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                >
+                  <option value="">Select experience level</option>
+                  <option value="emerging">Emerging Artist (0-3 years)</option>
+                  <option value="established">Established Artist (3-10 years)</option>
+                  <option value="professional">Professional Artist (10+ years)</option>
+                </select>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Exhibition History
-                  </label>
-                  <textarea
-                    name="exhibition_history"
-                    value={formData.exhibition_history}
-                    onChange={handleInputChange}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    placeholder="List your most significant exhibitions, shows, or achievements..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Why Dead Horse Gallery? * (100-200 words)
-                  </label>
-                  <textarea
-                    name="why_dead_horse"
-                    value={formData.why_dead_horse}
-                    onChange={handleInputChange}
-                    required
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    placeholder="Why do you want to be part of Dead Horse Gallery's curated collection?"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Primary Medium *
+                </label>
+                <select
+                  name="art_medium"
+                  value={formData.art_medium}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                >
+                  <option value="">Select primary medium</option>
+                  <option value="painting">Painting</option>
+                  <option value="drawing">Drawing</option>
+                  <option value="sculpture">Sculpture</option>
+                  <option value="photography">Photography</option>
+                  <option value="mixed_media">Mixed Media</option>
+                  <option value="digital">Digital Art</option>
+                  <option value="printmaking">Printmaking</option>
+                  <option value="ceramics">Ceramics</option>
+                  <option value="other">Other</option>
+                </select>
               </div>
             </div>
+          </div>
 
-            {/* Error Display */}
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
+          {/* Portfolio Images Section */}
+          <div className="border-b pb-6">
+            <h2 className="text-2xl font-semibold mb-4">Portfolio Images</h2>
+            <p className="text-gray-600 mb-4">Upload 3-6 high-quality images of your best work (Max 5MB each)</p>
+          </div>
 
-            {/* Application Fee Notice */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-2">Application Process</h3>
-              <ul className="text-blue-800 text-sm space-y-1">
-                <li>• £50 application fee (covers curation costs)</li>
-                <li>• Applications reviewed within 48 hours</li>
-                <li>• Detailed feedback provided for all applications</li>
-                <li>• Successful artists invited to list artworks immediately</li>
-              </ul>
+          {/* Portfolio Upload Info */}
+          <div className="mt-8">
+            <p className="text-gray-600 mb-4">
+              Please upload 3-6 high-quality images that best represent your work. Each image should be under 5MB.
+            </p>
+          </div>
+            
+          <div className="mb-4">
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+            />
+          </div>
+
+          {/* Image Previews */}
+          {imagePreview.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {imagePreview.map((preview, index) => (
+                <div key={index} className="relative">
+                  <Image
+                    src={preview}
+                    alt={`Portfolio piece ${index + 1}`}
+                    width={300}
+                    height={160}
+                    className="w-full h-40 object-cover rounded-lg"
+                    unoptimized={true} // Since these are blob URLs from file input
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
             </div>
+          )}
 
-            {/* Submit Button */}
+          {/* Artist Statement Section */}
+          <div className="border-b pb-6">
+            <h2 className="text-2xl font-semibold mb-4">About Your Work</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Artistic Statement * (300-500 words)
+                </label>
+                <textarea
+                  name="artistic_statement"
+                  value={formData.artistic_statement}
+                  onChange={handleInputChange}
+                  required
+                  rows={6}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  placeholder="Describe your artistic practice, influences, and what drives your work..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Exhibition History
+                </label>
+                <textarea
+                  name="exhibition_history"
+                  value={formData.exhibition_history}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  placeholder="List your most significant exhibitions, shows, or achievements..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Why Dead Horse Gallery? * (100-200 words)
+                </label>
+                <textarea
+                  name="why_dead_horse"
+                  value={formData.why_dead_horse}
+                  onChange={handleInputChange}
+                  required
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  placeholder="Why do you want to be part of Dead Horse Gallery's curated collection?"
+                />
+              </div>
+            </div>
+          </div>
+
+
+          {/* Application Fee Notice */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="font-semibold text-blue-900 mb-2">Application Process</h3>
+            <ul className="text-blue-800 text-sm space-y-1">
+              <li>• ${APPLICATION_FEE.toFixed(2)} application fee (covers curation costs)</li>
+              <li>• Applications reviewed within 48 hours</li>
+              <li>• Detailed feedback provided for all applications</li>
+              <li>• Successful artists invited to list artworks immediately</li>
+            </ul>
+          </div>
+
+          {/* Payment and Submit Section */}
+          {showPayment && clientSecret ? (
+            <div className="mt-8">
+              <h2 className="text-2xl font-semibold mb-4">Complete Payment</h2>
+              <PaymentFormWrapper
+                clientSecret={clientSecret}
+                amount={APPLICATION_FEE}
+                onSuccess={() => {
+                  router.push('/thank-you');
+                }}
+                onError={(error) => {
+                  setError({
+                    type: 'payment',
+                    message: error.message || 'Payment failed'
+                  });
+                  setShowPayment(false);
+                  setClientSecret(null);
+                }}
+              />
+            </div>
+          ) : (
             <div className="text-center">
               <button
                 type="submit"
-                disabled={submitting || formData.portfolio_images.length < 3}
+                disabled={submitting || formData.portfolio_images.length < MIN_IMAGES || paymentLoading}
                 className="bg-black text-white px-8 py-3 rounded-md hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-lg font-semibold"
               >
-                {submitting ? 'Submitting Application...' : 'Submit Application & Pay £50'}
+                {submitting || paymentLoading ? 'Processing...' : `Submit Application & Pay $${APPLICATION_FEE.toFixed(2)}`}
               </button>
               
-              {formData.portfolio_images.length < 3 && (
-                <p className="text-red-600 text-sm mt-2">Please upload at least 3 portfolio images</p>
+              {formData.portfolio_images.length < MIN_IMAGES && (
+                <p className="text-red-600 text-sm mt-2">Please upload at least {MIN_IMAGES} portfolio images</p>
               )}
             </div>
-          </form>
-        </div>
+          )}
+
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error.message}
+            </div>
+          )}
+        </form>
+      </div>
       </div>
     </div>
   );
 };
 
+function validateFile(file: File): string | null {
+    if (!file.type.startsWith('image/')) {
+        return 'Only image files are allowed';
+    }
+    if (file.size > MAX_FILE_SIZE) {
+        return `Each image must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`;
+    }
+    return null;
+}
+
 export default ArtistApplicationPage;
+
+
