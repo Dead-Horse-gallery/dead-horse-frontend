@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
         fs: false,
         net: false,
         tls: false,
+        // Magic.link admin SDK dependencies that are Node.js only
+        encoding: false,
+        bufferutil: false,
+        'utf-8-validate': false,
         // Keep crypto available for client-side (needed for auth-utils)
         // crypto: 'crypto-browserify', // If needed
       };

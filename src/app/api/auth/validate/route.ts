@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Magic } from '@magic-sdk/admin';
 import { createClient } from '@supabase/supabase-js';
 
+// Force Node.js runtime for Magic.link admin SDK compatibility
+export const runtime = 'nodejs';
+
 // Initialize Magic admin SDK (server-side only)
 const magic = new Magic(process.env.MAGIC_SECRET_KEY);
 

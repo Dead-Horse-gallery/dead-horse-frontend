@@ -24,7 +24,7 @@ export default function ResearchSurvey() {
     primaryConcern: '',
   });
 
-  const updateResponse = (key: keyof SurveyResponse, value: any) => {
+  const updateResponse = (key: keyof SurveyResponse, value: string | string[]) => {
     setResponses(prev => ({ ...prev, [key]: value }));
   };
 
@@ -158,7 +158,7 @@ export default function ResearchSurvey() {
             <div className="space-y-6">
               <h2 className="text-3xl font-bold mb-6">How comfortable are you with blockchain/Web3?</h2>
               <p className="text-gray-300">
-                Don't worry if you're not familiar - we're designed to be accessible to everyone!
+                Don&apos;t worry if you&apos;re not familiar - we&apos;re designed to be accessible to everyone!
               </p>
               
               <div className="space-y-4">
@@ -270,7 +270,7 @@ export default function ResearchSurvey() {
 
           {currentStep === 6 && (
             <div className="space-y-6">
-              <h2 className="text-3xl font-bold mb-6">What's your biggest concern about online art platforms?</h2>
+              <h2 className="text-3xl font-bold mb-6">What&apos;s your biggest concern about online art platforms?</h2>
               
               <div className="space-y-4">
                 {[
