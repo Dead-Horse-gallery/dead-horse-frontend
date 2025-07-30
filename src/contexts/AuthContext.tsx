@@ -1,8 +1,9 @@
+'use client';
+
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { createMagic } from '../lib/magic';
 import { useRouter } from 'next/navigation';
 import { AuthContextType, MagicUserMetadata, AuthProviderProps, AuthState, AuthError } from '../types/auth';
-import { supabase } from '../lib/supabase';
 import { 
   checkLoginAttempts, 
   generateCSRFToken, 
@@ -120,12 +121,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error('Invalid authentication attempt');
       }
 
-      // Get Supabase session
-      const { error: sessionError } = await supabase.auth.getSession();
+      // Validate token server-side
+      const response = await fetch('/api/auth/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ didToken }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Server validation failed');
+      }
+
+      await response.json(); // Validate server response
       
-      if (sessionError) throw sessionError;
-      
-      // Get user metadata
+      // Get user metadata from Magic for client state
       const metadata = await magic.user.getInfo();
       setUser(metadata as MagicUserMetadata);
       setIsAuthenticated(true);
@@ -152,9 +163,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Clear all authentication state
       localStorage.removeItem('auth_state');
       sessionStorage.removeItem('csrf_token');
-
-      // Clear Supabase session
-      await supabase.auth.signOut();
       
       // Logout from Magic
       await magic.user.logout();

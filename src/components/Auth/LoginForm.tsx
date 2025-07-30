@@ -1,31 +1,34 @@
-// src/components/Auth/LoginForm.js
+'use client';
+
+// src/components/Auth/LoginForm.tsx
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { MagicUserMetadata } from '../../types/auth';
 
-const LoginForm = ({ onSuccess }) => {
+interface LoginFormProps {
+  onSuccess?: (user: MagicUserMetadata) => void;
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showMagicLinkSent, setShowMagicLinkSent] = useState(false);
-  const { login } = useAuth();
+  const { login, user } = useAuth();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setShowMagicLinkSent(true);
 
     try {
-      const result = await login(email);
-      
-      if (result.success) {
-        setShowMagicLinkSent(false);
-        onSuccess && onSuccess(result.user);
-      } else {
-        setError(result.error || 'Login failed');
-        setShowMagicLinkSent(false);
+      await login(email);
+      setShowMagicLinkSent(false);
+      if (user) {
+        onSuccess?.(user);
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred');
       setShowMagicLinkSent(false);
     }
@@ -48,7 +51,7 @@ const LoginForm = ({ onSuccess }) => {
             We sent a magic link to <strong>{email}</strong>
           </p>
           <p className="text-sm text-gray-500">
-            Click the link in your email to complete sign in. This window will automatically update when you're authenticated.
+            Click the link in your email to complete sign in. This window will automatically update when you&apos;re authenticated.
           </p>
           <button
             onClick={() => {
@@ -108,7 +111,7 @@ const LoginForm = ({ onSuccess }) => {
 
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
-          We'll send you a secure login link via email. No passwords needed!
+          We&apos;ll send you a secure login link via email. No passwords needed!
         </p>
         <p className="text-xs text-gray-500 mt-2">
           New to Dead Horse? Your account will be created automatically.

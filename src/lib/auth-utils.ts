@@ -1,3 +1,5 @@
+'use client';
+
 import { AuthError } from '../types/auth';
 
 const MAX_LOGIN_ATTEMPTS = 5;
