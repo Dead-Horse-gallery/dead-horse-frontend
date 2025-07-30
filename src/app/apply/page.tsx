@@ -3,7 +3,7 @@
 // src/app/apply/page.tsx
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { useAuth } from '../../contexts/AuthContext';
+import { useHybridAuth } from '../../contexts/HybridAuthContext';
 import { useRouter } from 'next/navigation';
 import { usePayment } from '../../hooks/usePayment';
 import { PaymentFormWrapper } from '../../components/PaymentForm';
@@ -11,6 +11,7 @@ import { uploadPortfolio } from '../../lib/supabase';
 import type { SupabaseUploadResult, MagicUser } from '../../types/supabase';
 import type { ApplicationFormError } from '../../types/payment';
 
+import { log } from '@/lib/logger';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MIN_IMAGES = 3;
 const MAX_IMAGES = 6;
@@ -29,7 +30,7 @@ interface FormData {
 }
 
 const ArtistApplicationPage = () => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading } = useHybridAuth();
   const router = useRouter();
 
   const [imagePreview, setImagePreview] = useState<string[]>([]);
@@ -204,7 +205,7 @@ const ArtistApplicationPage = () => {
         type: 'submission',
         message: error.message || 'An unexpected error occurred'
       });
-      console.error('Application submission error:', error);
+      log.error('Application submission error:', { error: error });
     } finally {
       setSubmitting(false);
     }

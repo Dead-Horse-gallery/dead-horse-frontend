@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import type { PaymentIntent } from '@stripe/stripe-js';
 import { stripePromise } from '../lib/stripe';
-import { useAuth } from '../contexts/AuthContext';
+import { useHybridAuth } from '../contexts/HybridAuthContext';
 
 interface PaymentFormWrapperProps {
   clientSecret: string;
@@ -26,7 +26,7 @@ interface PaymentError {
 const PaymentFormContent = ({ amount, onSuccess, onError }: Omit<PaymentFormWrapperProps, 'clientSecret'>) => {
   const stripe = useStripe();
   const elements = useElements();
-  const { user } = useAuth();
+  const { user } = useHybridAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 

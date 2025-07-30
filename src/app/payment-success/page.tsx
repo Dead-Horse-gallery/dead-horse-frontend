@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStripe } from '@stripe/react-stripe-js';
 
+import { log } from '@/lib/logger';
 export default function PaymentSuccessPage() {
   const stripe = useStripe();
   const router = useRouter();
@@ -47,7 +48,7 @@ export default function PaymentSuccessPage() {
           }
         })
         .catch((err) => {
-          console.error('Error retrieving payment intent:', err);
+          log.error('Error retrieving payment intent:', { error: err });
           router.push('/apply');
         });
     }

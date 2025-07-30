@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 
+import { log } from '@/lib/logger';
 if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
   throw new Error('Missing Stripe environment variables');
 }
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
         process.env.STRIPE_WEBHOOK_SECRET!
       );
     } catch (err) {
-      console.error('Webhook signature verification failed:', err);
+      log.error('Webhook signature verification failed:', { error: err });
       return new NextResponse(
         JSON.stringify({ error: 'Invalid signature' }),
         { status: 400 }
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
           .eq('stripe_payment_intent_id', paymentIntent.id);
 
         if (updateError) {
-          console.error('Error updating application:', updateError);
+          log.error('Error updating application:', { error: updateError });
           throw updateError;
         }
         break;
@@ -85,7 +86,7 @@ export async function POST(request: Request) {
           .eq('stripe_payment_intent_id', failedPayment.id);
 
         if (failureError) {
-          console.error('Error updating failed payment:', failureError);
+          log.error('Error updating failed payment:', { error: failureError });
           throw failureError;
         }
         break;
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
 
     return new NextResponse(JSON.stringify({ received: true }));
   } catch (error) {
-    console.error('Webhook error:', error);
+    log.error('Webhook error:', { error: error });
     return new NextResponse(
       JSON.stringify({ error: 'Webhook handler failed' }),
       { status: 500 }

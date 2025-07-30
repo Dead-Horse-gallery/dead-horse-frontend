@@ -2,8 +2,9 @@
 
 // src/app/test-auth/page.tsx
 import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useHybridAuth } from '../../contexts/HybridAuthContext';
 import LoginForm from '../../components/Auth/LoginForm';
+import { log } from '@/lib/logger';
 
 // Extend MagicUserMetadata to include 'role' and 'display_name'
 type UserWithRole = {
@@ -14,7 +15,7 @@ type UserWithRole = {
 };
 
 const TestAuth = () => {
-  const { user, loading, logout, isAuthenticated } = useAuth() as {
+  const { user, loading, logout, isAuthenticated } = useHybridAuth() as {
     user: UserWithRole | null;
     loading: boolean;
     logout: () => void;
@@ -124,7 +125,7 @@ const TestAuth = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <LoginForm onSuccess={(user: unknown) => {
-        console.log('Login successful!', user);
+        log.auth('Login successful', { user });
       }} />
     </div>
   );

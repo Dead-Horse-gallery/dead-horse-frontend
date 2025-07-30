@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
+import { log } from '@/lib/logger';
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing Stripe secret key');
@@ -87,7 +88,7 @@ export async function POST(request: Request) {
       });
 
     if (insertError) {
-      console.error('Database insertion error:', insertError);
+      log.error('Database insertion error:', { error: insertError });
       throw new Error('Failed to save application');
     }
 
@@ -103,7 +104,7 @@ export async function POST(request: Request) {
     );
 
   } catch (error) {
-    console.error('Application submission error:', error);
+    log.error('Application submission error:', { error: error });
 
     if (error instanceof z.ZodError) {
       return new NextResponse(

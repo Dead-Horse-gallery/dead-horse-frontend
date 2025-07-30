@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Magic } from '@magic-sdk/admin';
 import { createClient } from '@supabase/supabase-js';
 
+import { log } from '@/lib/logger';
 // Force Node.js runtime for Magic.link admin SDK compatibility
 export const runtime = 'nodejs';
 
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (createError) {
-        console.error('Error creating user:', createError);
+        log.error('Error creating user:', { error: createError });
         return NextResponse.json(
           { error: 'Failed to create user' },
           { status: 500 }
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Token validation error:', error);
+    log.error('Token validation error:', { error: error });
     return NextResponse.json(
       { error: 'Invalid authentication token' },
       { status: 401 }

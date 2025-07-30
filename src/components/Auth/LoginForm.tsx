@@ -2,11 +2,11 @@
 
 // src/components/Auth/LoginForm.tsx
 import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { MagicUserMetadata } from '../../types/auth';
+import { useHybridAuth } from '../../contexts/HybridAuthContext';
+import { MagicUser } from '../../types/auth';
 
 interface LoginFormProps {
-  onSuccess?: (user: MagicUserMetadata) => void;
+  onSuccess?: (user: MagicUser) => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
@@ -14,7 +14,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showMagicLinkSent, setShowMagicLinkSent] = useState(false);
-  const { login, user } = useAuth();
+  const { login, user } = useHybridAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,8 +25,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     try {
       await login(email);
       setShowMagicLinkSent(false);
-      if (user) {
-        onSuccess?.(user);
+      if (user && onSuccess) {
+        onSuccess(user);
       }
     } catch {
       setError('An unexpected error occurred');

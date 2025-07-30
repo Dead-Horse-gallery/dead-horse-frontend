@@ -1,4 +1,5 @@
 import { loadStripe } from '@stripe/stripe-js';
+import { log } from './logger';
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -24,7 +25,7 @@ export async function createPaymentIntent(amount: number): Promise<CreatePayment
 
     return await response.json();
   } catch (error) {
-    console.error('Error creating payment intent:', error);
+    log.error('Error creating payment intent', { error, amount });
     throw error;
   }
 }

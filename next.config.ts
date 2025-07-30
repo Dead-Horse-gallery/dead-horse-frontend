@@ -1,5 +1,12 @@
 import type { NextConfig } from "next";
 
+// Bundle analyzer for performance optimization
+import withBundleAnalyzer from '@next/bundle-analyzer';
+
+const withBundleAnalyzerInstance = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const nextConfig: NextConfig = {
   // Only ignore specific known issues, not all errors
   eslint: {
@@ -10,9 +17,16 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false, // Let's see actual TypeScript issues
   },
   
-  // Webpack customizations - much more targeted
+  experimental: {
+    // Enable server actions for nonce support
+    serverActions: {
+      bodySizeLimit: '2mb'
+    }
+  },
+  
+  // Webpack customizations - minimal fallbacks for Magic.link compatibility
   webpack: (config, { isServer }) => {
-    // Only add fallbacks for client-side builds
+    // Only add fallbacks for client-side builds to prevent Node.js modules in browser
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -23,8 +37,6 @@ const nextConfig: NextConfig = {
         encoding: false,
         bufferutil: false,
         'utf-8-validate': false,
-        // Keep crypto available for client-side (needed for auth-utils)
-        // crypto: 'crypto-browserify', // If needed
       };
     }
 
@@ -35,7 +47,40 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['localhost'],
     unoptimized: true, // Simplified for development
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
+
+  // Security headers that don't require nonce (middleware handles CSP with nonce)
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ];
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzerInstance(nextConfig);

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
+import { log } from '@/lib/logger';
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY is not set in environment variables');
 }
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
       paymentIntentId: paymentIntent.id,
     });
   } catch (error) {
-    console.error('Error creating payment intent:', error);
+    log.error('Error creating payment intent:', { error: error });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

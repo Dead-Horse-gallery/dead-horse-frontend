@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
+import { log } from '@/lib/logger';
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
   throw new Error('Missing Supabase environment variables');
 }
@@ -24,7 +25,7 @@ export async function uploadPortfolio(file: File, userId: string) {
 
     return data;
   } catch (error) {
-    console.error('Error uploading file:', error);
+    log.error('Error uploading file:', { error: error });
     throw error;
   }
 }
@@ -37,7 +38,7 @@ export async function getPortfolioUrl(path: string) {
 
     return data.publicUrl;
   } catch (error) {
-    console.error('Error getting public URL:', error);
+    log.error('Error getting public URL:', { error: error });
     throw error;
   }
 }
